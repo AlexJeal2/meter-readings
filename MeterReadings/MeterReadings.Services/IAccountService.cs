@@ -2,6 +2,6 @@
 {
     public interface IAccountService
     {
-        void SeedDatabase();
+        Task SeedDatabaseAsync();
     }
 }

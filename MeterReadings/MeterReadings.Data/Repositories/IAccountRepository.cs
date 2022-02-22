@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MeterReadings.Data.Models;
 
 namespace MeterReadings.Data.Repositories
 {
-    public interface IAccountRepository
+    public interface IAccountRepository : IRepositoryBase
     {
+        Task AddAccounts(IEnumerable<Account> accounts);
     }
 }

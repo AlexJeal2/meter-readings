@@ -25,5 +25,10 @@ namespace MeterReadings.Data.Repositories
             var accountsToAdd = accounts.Where(x => !existingAccountIds.Contains(x.AccountId));
             _dbContext.Accounts.AddRange(accountsToAdd);
         }
+
+        public IQueryable<Account> GetAccounts()
+        {
+            return _dbContext.Accounts;
+        }
     }
 }

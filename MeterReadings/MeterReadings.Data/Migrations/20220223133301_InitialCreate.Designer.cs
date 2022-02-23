@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MeterReadings.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220223021926_AddMeterReadingTable")]
-    partial class AddMeterReadingTable
+    [Migration("20220223133301_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -27,10 +27,7 @@ namespace MeterReadings.Data.Migrations
             modelBuilder.Entity("MeterReadings.Data.Models.Account", b =>
                 {
                     b.Property<int>("AccountId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AccountId"), 1L, 1);
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -49,25 +46,22 @@ namespace MeterReadings.Data.Migrations
 
             modelBuilder.Entity("MeterReadings.Data.Models.MeterReading", b =>
                 {
-                    b.Property<int>("MeterReadingId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MeterReadingId"), 1L, 1);
-
                     b.Property<int>("AccountId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("MeterReadingDateTime")
+                        .HasColumnType("smalldatetime");
 
                     b.Property<string>("MeterReadValue")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("MeterReadingDateTime")
-                        .HasColumnType("smalldatetime");
+                    b.HasKey("AccountId", "MeterReadingDateTime");
 
-                    b.HasKey("MeterReadingId");
+                    b.HasIndex("AccountId", "MeterReadingDateTime")
+                        .HasDatabaseName("IX_MeterReading_MeterReadValue");
 
-                    b.HasIndex("AccountId");
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("AccountId", "MeterReadingDateTime"), new[] { "MeterReadValue" });
 
                     b.ToTable("MeterReadings");
                 });

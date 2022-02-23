@@ -1,0 +1,75 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Upload Meter Readings</h1>
+    <form enctype="multipart/form-data" method="post">
+        <dl>
+            <dd>
+                <label id="lblSelectFile" asp-for="Upload" class="btn btn-secondary" style="width: 200px;">
+                    Select File
+                </label>
+                <input style="display: none" asp-for="Upload" type="file"/>
+            </dd>
+        </dl>
+        <input asp-page-handler="Upload" class="btn custom-button" style="width: 200px;" type="submit" value="Upload" />
+    </form>
+    
+    <div class="row">
+        @if(Model.UploadResults != null)
+        {
+            <span>@Model.UploadResults.SuccessCount readings were uploaded successfully</span>
+            if (Model.UploadResults.FailureCount > 0)
+            {
+                <span>@Model.UploadResults.FailureCount readings failed validation and were not uploaded</span>
+                <div class="row mt-3">
+                    <h2>Failed Items</h2>
+                </div>
+                <div>
+                    <table class="table table-bordered table-responsive">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">AccountId</th>
+                                <th scope="col">MeterReadingDateTime</th>
+                                <th scope="col">MeterReadValue</th>
+                                <th scope="col">FailureReasons</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                foreach(var (failedReading, rowNumber) in Model.UploadResults.FailedReadings.Select((item, index) => (item, index+1)))
+                                {
+                                    <tr>
+                                        <th scope="row">@rowNumber</th>
+                                        <td>@failedReading.AccountId</td>
+                                        <td>@failedReading.MeterReadingDateTime</td>
+                                        <td>@failedReading.MeterReadValue</td>
+                                        <td>@{
+                                                foreach(var error in failedReading.ValidationErrors)
+                                                {
+                                                 <span>@error</span>
+                                                }
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<script type="text/javascript">
+    const label = $("#lblSelectFile");
+
+    $("#Upload").on("change", (e) => {
+        label.text(e.target.value.split('\\').pop() || "Select File");
+    });
+</script>

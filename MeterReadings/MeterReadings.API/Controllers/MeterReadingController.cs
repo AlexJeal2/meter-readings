@@ -17,14 +17,19 @@ namespace MeterReadings.API.Controllers
         }
 
 
-        [HttpPost("/meter-reading-uploads")]
+        [HttpPost("api/meter-reading-uploads")]
         public async Task<IActionResult> UploadMeterReadings(IFormFile readings)
         {
             var readingsCsv = await ReadCsvFromFile(readings);
 
-            _meterReadingService.GetMeterReadingsFromCsv(readingsCsv);
+            var meterReadings = await _meterReadingService.AddMeterReadingsFromCsvAsync(readingsCsv);
 
-            return Ok();
+            return Created(string.Empty, new
+            {
+                SuccessCount = meterReadings.ValidReadings.Count,
+                FailureCount = meterReadings.InvalidReadings.Count,
+                FailedReadings = meterReadings.InvalidReadings
+            });
         }
 
         private async Task<string> ReadCsvFromFile(IFormFile file)

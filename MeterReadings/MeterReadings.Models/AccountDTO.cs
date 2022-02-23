@@ -2,14 +2,17 @@
 
 namespace MeterReadings.Models
 {
-    public class AccountCreateModel
+    public class AccountDTO
     {
+        [Key]
+        [Required]
+        public int AccountId { get; set; }
         [Required]
         public string FirstName { get; set; }
         [Required]
         public string LastName { get; set; }
 
-        public AccountCreateModel(string firstName, string lastName)
+        public AccountDTO(string firstName, string lastName)
         {
             FirstName = firstName;
             LastName = lastName;

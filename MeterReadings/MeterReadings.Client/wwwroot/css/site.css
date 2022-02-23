@@ -1,0 +1,30 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.custom-button {
+    background-color: hsl(16, 82%, 56%);
+    border: none;
+    color: white;
+}
+
+.custom-button:hover {
+    background-color: hsl(16, 82%, 46%);
+    border: none;
+    color: white;
+}

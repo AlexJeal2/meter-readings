@@ -1,4 +1,7 @@
-﻿using MeterReadings.Data.Repositories;
+﻿using AutoMapper;
+using MeterReadings.Data.Models;
+using MeterReadings.Data.Repositories;
+using MeterReadings.Models;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -9,68 +12,157 @@ namespace MeterReadings.Services
     {
         private readonly IMeterReadingRepository _meterReadingRepository;
         private readonly ILogger<MeterReadingService> _logger;
+        private readonly IMapper _mapper;
+        private readonly IAccountRepository _accountRepository;
 
-        public MeterReadingService(IMeterReadingRepository meterReadingRepository, ILogger<MeterReadingService> logger)
+        public MeterReadingService(
+            IMeterReadingRepository meterReadingRepository, 
+            IAccountRepository accountRepository, 
+            IMapper mapper, ILogger<MeterReadingService> logger)
         {
             _meterReadingRepository = meterReadingRepository;
+            _accountRepository = accountRepository;
+            _mapper = mapper;
             _logger = logger;
         }
-        public List<MeterReadingInputModel>? GetMeterReadingsFromCsv(string csv)
+        public async Task<AddMeterReadingsResultDTO> AddMeterReadingsFromCsvAsync(string csv)
         {
-            if (string.IsNullOrWhiteSpace(csv)) return null;
-            var rows = csv.Split(Environment.NewLine);
+            var result = GetValidMeterReadingsFromCsv(csv);
+            var groupedResults = GroupReadingsByCustomer(result);
+
+            var missingAccountIds = GetMissingAccountIds(groupedResults.Keys);
+
+            foreach (var (accountId, readings) in groupedResults)
+            {
+                if (!ValidateAccountExists(missingAccountIds, accountId,readings, result))
+                {
+                    continue;
+                }
+
+                ValidateNoLaterRecords(accountId, readings, result);
+            }
+
+            var newReadings = _mapper.Map<IEnumerable<MeterReading>>(result.ValidReadings);
+            _meterReadingRepository.AddMeterReadings(newReadings);
+            await _meterReadingRepository.SaveChangesAsync();
+            return result;
+        }
+
+        private void ValidateNoLaterRecords(int accountId, List<MeterReadingDTO> readings, AddMeterReadingsResultDTO result)
+        {
+            var latestAccountReading = _meterReadingRepository.GetReadingsForAccount(accountId)
+                    .OrderByDescending(x => x.MeterReadingDateTime)
+                    .FirstOrDefault();
+
+            if (latestAccountReading == null)
+            {
+                return;
+            }
+
+            var invalidReadings = readings.Where(r => r.MeterReadingDateTime <= latestAccountReading.MeterReadingDateTime);
+            foreach (var reading in invalidReadings)
+            {
+                reading.ValidationErrors.Add($"A later reading already exists for AccountId: {accountId}  ({latestAccountReading.MeterReadingDateTime})");
+                result.ValidReadings.Remove(reading);
+                result.InvalidReadings.Add(reading);
+            }
+        }
+
+        public AddMeterReadingsResultDTO GetValidMeterReadingsFromCsv(string csv)
+        {
+            var result = new AddMeterReadingsResultDTO();
+            if (string.IsNullOrWhiteSpace(csv)) return result;
+
+            var rows = csv.Split(Environment.NewLine).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
             //Still no readings if we don't have at least 2 rows
-            if (rows.Length < 2) return null;
+            if (rows.Length < 2) return result;
 
-            List<MeterReadingInputModel> readings = new List<MeterReadingInputModel>();
-            List<MeterReadingInputModel> invalidReadings = new List<MeterReadingInputModel>();
-
-            foreach (string rowData in rows.Skip(1).Where(s => !string.IsNullOrWhiteSpace(s)))
+            foreach (string rowData in rows.Skip(1))
             {
                 try
                 {
                     var reading = CreateReadingFromCsvData(rowData);
-
-                    if (ReadingIsValid(reading))
-                    {
-                        readings.Add(reading);
-                    }
-                    else
-                    {
-                        invalidReadings.Add(reading);
-                    }
+                    ValidateReading(reading, result);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, ex.Message);
                 }
             }
-            return readings;
+
+            return result;
         }
 
-        public MeterReadingInputModel CreateReadingFromCsvData(string rowData)
+        public Dictionary<int, List<MeterReadingDTO>> GroupReadingsByCustomer(AddMeterReadingsResultDTO readings)
+        {
+            //Group account readings by Account ID
+            //Sort them in reading date order before inserting
+            var accountReadings = readings.ValidReadings
+                .GroupBy(r => r.AccountId)
+                .ToDictionary(group => group.Key, readings => readings.OrderBy(reading => reading.MeterReadingDateTime).ToList());
+
+            return accountReadings;
+        }
+
+        public MeterReadingDTO CreateReadingFromCsvData(string rowData)
         {
             var colData = rowData.Split(',');
             var accountId = int.Parse(colData[0]);
             var readTime = DateTime.ParseExact(colData[1], "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
             var readValue = colData[2].ToString();
 
-            var reading = new MeterReadingInputModel(accountId, readTime, readValue);
+            var reading = new MeterReadingDTO(accountId, readTime, readValue);
             return reading;
         }
 
-        public bool ReadingIsValid(MeterReadingInputModel reading)
+        public void ValidateReading(MeterReadingDTO reading, AddMeterReadingsResultDTO response)
         {
             if (!MeterReadValueIsValid(reading.MeterReadValue))
             {
                 reading.ValidationErrors.Add("MeterReadValue must be in the format 'NNNNN'");
             }
-            return reading.IsValid;
+            if (response.ValidReadings.Contains(reading))
+            {
+                //We have a duplicate, reject it
+                reading.ValidationErrors.Add(@$"Duplicate meter reading found for AccountId: {reading.AccountId}, MeterReadingDateTime: {reading.MeterReadingDateTime}");
+            }
+
+            if (!reading.IsValid)
+            {
+                //Remove it from valid just in case we had a duplicate
+                response.ValidReadings.Remove(reading);
+                response.InvalidReadings.Add(reading);
+            }
+            else
+            {
+                response.ValidReadings.Add(reading);
+            }
+        }
+
+        public bool ValidateAccountExists(HashSet<int> missingAccountIds, int accountId, List<MeterReadingDTO> readings, AddMeterReadingsResultDTO result)
+        {
+            if (missingAccountIds.Contains(accountId))
+            {
+                readings.ForEach(reading =>
+                {
+                    reading.ValidationErrors.Add($"Account not found for AccountId {accountId}");
+                    result.ValidReadings.Remove(reading);
+                    result.InvalidReadings.Add(reading);
+                });
+                return false;
+            }
+            return true;
         }
 
         private bool MeterReadValueIsValid(string meterReadValue)
         {
             return Regex.IsMatch(meterReadValue, "^\\d{5}$");
+        }
+
+        private HashSet<int> GetMissingAccountIds(IEnumerable<int> accountIds)
+        {
+            var missingAccounts = new HashSet<int>(accountIds.Where(x => !_accountRepository.GetAccounts().Any(acc => acc.AccountId == x)));
+            return missingAccounts;
         }
     }
 }

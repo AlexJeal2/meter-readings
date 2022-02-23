@@ -1,7 +1,9 @@
 using MeterReadings.API;
 using MeterReadings.Data;
+using MeterReadings.Models;
 using MeterReadings.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace MeterReadings;
 
@@ -12,7 +14,6 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
         // Add services to the container.
         builder.Services.AddControllers();
-
         ConfigureSqlServer(builder);
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -22,7 +23,7 @@ public class Program
         //Configure DI
         DependencyInjection.Configure(builder.Services);
         //Configure AutoMapper
-        builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+        builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(MappingProfile)));
 
         var app = builder.Build();
 
@@ -64,7 +65,14 @@ public class Program
 
     static void ConfigureSqlServer(WebApplicationBuilder builder)
     {
-        var connectionString = Environment.GetEnvironmentVariable("SQL_CONNECTIONSTRING")!;
+        var connectionString = Environment.GetEnvironmentVariable("SQL_CONNECTIONSTRING");
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            //Try and get from appsettings instead
+            connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        }
+
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(connectionString));
     }

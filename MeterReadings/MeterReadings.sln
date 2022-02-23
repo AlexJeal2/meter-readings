@@ -18,12 +18,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeterReadings.Models", "Met
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeterReadings.Services", "MeterReadings.Services\MeterReadings.Services.csproj", "{432A6588-B3C6-4679-B6A7-E515129D82FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeterReadings.Tests", "MeterReadings.Tests\MeterReadings.Tests.csproj", "{49CFD504-3EE6-4925-9C65-21EED3262556}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeterReadings.Tests", "MeterReadings.Tests\MeterReadings.Tests.csproj", "{49CFD504-3EE6-4925-9C65-21EED3262556}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlServer", "SqlServer", "{0D9C93BE-F245-45C6-B211-A8CBCD159DDD}"
 	ProjectSection(SolutionItems) = preProject
 		SqlServer\Dockerfile = SqlServer\Dockerfile
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeterReadings.Client", "MeterReadings.Client\MeterReadings.Client.csproj", "{FCDFD520-9C0E-46FB-BD76-4374CE0B1335}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{49CFD504-3EE6-4925-9C65-21EED3262556}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{49CFD504-3EE6-4925-9C65-21EED3262556}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{49CFD504-3EE6-4925-9C65-21EED3262556}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCDFD520-9C0E-46FB-BD76-4374CE0B1335}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCDFD520-9C0E-46FB-BD76-4374CE0B1335}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCDFD520-9C0E-46FB-BD76-4374CE0B1335}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCDFD520-9C0E-46FB-BD76-4374CE0B1335}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

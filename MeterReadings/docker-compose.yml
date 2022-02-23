@@ -1,5 +1,16 @@
 version: '3.9'
 services:
+  webapp:
+    build:
+      context: .
+      dockerfile: /MeterReadings.Client/Dockerfile
+    ports:
+      - 3000:80
+      - 3001:443
+    environment:
+        - API_URL=http://api:80/api
+    depends_on: 
+      - api
   api:
     image: ${DOCKER_REGISTRY-}meter-readings
     build:
@@ -10,10 +21,24 @@ services:
       - 5001:443
     environment:
       - SQL_CONNECTIONSTRING=Server=sqldb,1433;Database=MeterReadings;user=sa;password=ENSEKTest2022;MultipleActiveResultSets=true
+    depends_on:
+      - sqldb
   sqldb:
-    image: "mcr.microsoft.com/mssql/server"
+    build: 
+      context: .
+      dockerfile: ./SqlServer/Dockerfile
+    ports:  
+    - "6000:1433"
     environment:
-        SA_PASSWORD: "ENSEKTest2022"
-        ACCEPT_EULA: "Y"
-    ports:
-        - 14333:1433
+      SA_PASSWORD: "ENSEKTest2022"
+      ACCEPT_EULA: "Y"
+    volumes: 
+    - sqlsystem:/var/opt/mssql/
+    - sqldata:/var/opt/sqlserver/data
+    - sqllog:/var/opt/sqlserver/log
+    - sqlbackup:/var/opt/sqlserver/backup
+volumes:
+  sqlsystem:
+  sqldata:
+  sqllog:
+  sqlbackup:

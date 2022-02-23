@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MeterReadings.Services
+namespace MeterReadings.Models
 {
-    public class MeterReadingInputModel
+    public class MeterReadingDTO
     {
+        [Key]
         [Required]
         public int AccountId { get; set; }
+        [Key]
         [Required]
         public DateTime MeterReadingDateTime { get; set; }
         [Required]
@@ -15,7 +17,7 @@ namespace MeterReadings.Services
         public bool IsValid => ValidationErrors.Count == 0;
         public List<string> ValidationErrors { get; set; } = new List<string>();
 
-        public MeterReadingInputModel(int accountId, DateTime meterReadingDateTime, string meterReadValue)
+        public MeterReadingDTO(int accountId, DateTime meterReadingDateTime, string meterReadValue)
         {
             AccountId = accountId;
             MeterReadingDateTime = meterReadingDateTime;
@@ -25,10 +27,10 @@ namespace MeterReadings.Services
 
         public override bool Equals(object? obj)
         {
-            return obj != null && Equals(obj as MeterReadingInputModel);
+            return obj != null && Equals(obj as MeterReadingDTO);
         }
 
-        public bool Equals(MeterReadingInputModel? other)
+        public bool Equals(MeterReadingDTO? other)
         {
             //Equality for a meter reading is for the same account and time
             return other != null &&

@@ -10,9 +10,6 @@ namespace MeterReadings.Data.Models
 {
     public class MeterReading
     {
-        [Key]
-        public int MeterReadingId { get; set; }
-
         [ForeignKey("Account")]
         public int AccountId { get; set; }
         [Required]

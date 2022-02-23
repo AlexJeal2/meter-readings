@@ -1,9 +1,4 @@
 ﻿using MeterReadings.Data.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MeterReadings.Data.Repositories
 {
@@ -15,18 +10,14 @@ namespace MeterReadings.Data.Repositories
             _dbContext = dbContext;
         }
 
-        public void AddMeterReadings(Dictionary<int, List<MeterReading>> readingsByAccount)
-        {
-            foreach (var (accountId, readings) in readingsByAccount)
-            {
-                AddMeterReadingsForAccount(accountId, readings);
-            }
-            return;
-        }
-
-        public void AddMeterReadingsForAccount(int accountId, List<MeterReading> meterReadings)
+        public void AddMeterReadings(IEnumerable<MeterReading> meterReadings)
         {
             _dbContext.MeterReadings.AddRange(meterReadings);
+        }
+
+        public IQueryable<MeterReading> GetReadingsForAccount(int accountId)
+        {
+            return _dbContext.MeterReadings.Where(mr => mr.AccountId == accountId);
         }
     }
 }

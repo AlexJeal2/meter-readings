@@ -2,9 +2,9 @@
 
 namespace MeterReadings.Data.Repositories
 {
-    public interface IMeterReadingRepository
+    public interface IMeterReadingRepository : IRepositoryBase
     {
-        void AddMeterReadings(Dictionary<int, List<MeterReading>> readingsByAccount);
-        void AddMeterReadingsForAccount(int accountId, List<MeterReading> meterReadings);
+        void AddMeterReadings(IEnumerable<MeterReading> meterReadings);
+        IQueryable<MeterReading> GetReadingsForAccount(int accountId);
     }
 }

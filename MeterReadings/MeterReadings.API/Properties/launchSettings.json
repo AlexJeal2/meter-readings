@@ -6,6 +6,10 @@
     "iisExpress": {
       "applicationUrl": "http://localhost:5000",
       "sslPort": 5000
+    },
+    "environmentVariables": {
+      "ASPNETCORE_ENVIRONMENT": "Development",
+      "SQL_CONNECTIONSTRING": "Server=localhost,15789;Database=MeterReadings;user=sa;password=P@ssword1;MultipleActiveResultSets=true"
     }
   },
   "profiles": {

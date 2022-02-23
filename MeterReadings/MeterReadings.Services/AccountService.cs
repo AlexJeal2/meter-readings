@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using MeterReadings.Data.Models;
 using MeterReadings.Data.Repositories;
-using System.Text.Json;
+using System.IO.Abstractions;
 
 namespace MeterReadings.Services
 {
@@ -9,16 +9,18 @@ namespace MeterReadings.Services
     {
         private IMapper _mapper;
         private readonly IAccountRepository _accountRepository;
+        private readonly IFileSystem _fileSystem;
 
-        public AccountService(IMapper mapper, IAccountRepository accountRepository)
+        public AccountService(IAccountRepository accountRepository, IFileSystem fileSystem, IMapper mapper)
         {
-            _mapper = mapper;
             _accountRepository = accountRepository;
+            _fileSystem = fileSystem;
+            _mapper = mapper;
         }
 
         public async Task SeedDatabaseAsync()
         {
-            var lines = (await File.ReadAllLinesAsync(@"Test_Accounts.csv")).ToList();
+            var lines = (await _fileSystem.File.ReadAllLinesAsync(@"Test_Accounts.csv")).ToList();
 
             List<Account> accounts = new List<Account>();
             foreach (string line in lines.Skip(1))
@@ -29,7 +31,7 @@ namespace MeterReadings.Services
                 accounts.Add(account);
             }
 
-            await _accountRepository.AddAccounts(accounts);
+            _accountRepository.AddAccounts(accounts);
             await _accountRepository.SaveChangesAsync();
         }
     }

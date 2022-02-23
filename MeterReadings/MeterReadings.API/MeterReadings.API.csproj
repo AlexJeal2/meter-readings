@@ -32,4 +32,13 @@
     <ProjectReference Include="..\MeterReadings.Services\MeterReadings.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Meter_Reading.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Test_Accounts.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

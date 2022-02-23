@@ -64,7 +64,7 @@ public class Program
 
     static void ConfigureSqlServer(WebApplicationBuilder builder)
     {
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        var connectionString = Environment.GetEnvironmentVariable("SQL_CONNECTIONSTRING")!;
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(connectionString));
     }

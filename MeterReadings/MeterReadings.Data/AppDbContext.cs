@@ -9,6 +9,16 @@ namespace MeterReadings.Data
         {
 
         }
-        public DbSet<Account> Accounts => Set<Account>();
+        public virtual DbSet<Account> Accounts => Set<Account>();
+        public virtual DbSet<MeterReading> MeterReadings => Set<MeterReading>();
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            var meterReading = modelBuilder.Entity<MeterReading>();
+            //Use a smalldatetime for MeterReadingDateTime ad we only need to store to the minute
+            meterReading.Property(r => r.MeterReadingDateTime).HasColumnType("smalldatetime");
+
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

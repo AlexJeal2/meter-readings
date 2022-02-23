@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MeterReadings.Services;
+using Microsoft.AspNetCore.Mvc;
+using System.Text;
 
 namespace MeterReadings.API.Controllers
 {
@@ -6,23 +8,34 @@ namespace MeterReadings.API.Controllers
     public class MeterReadingController : ControllerBase
     {
         private readonly ILogger<MeterReadingController> _logger;
+        private readonly IMeterReadingService _meterReadingService;
 
-        public MeterReadingController(ILogger<MeterReadingController> logger)
+        public MeterReadingController(IMeterReadingService meterReadingService, ILogger<MeterReadingController> logger)
         {
             _logger = logger;
+            _meterReadingService = meterReadingService;
         }
 
 
         [HttpPost("/meter-reading-uploads")]
-        public IActionResult UploadMeterReadings(IFormFile readings)
+        public async Task<IActionResult> UploadMeterReadings(IFormFile readings)
         {
-            var f = readings;
-            var result = new
-            {
-                Message = "Hello World"
-            };
+            var readingsCsv = await ReadCsvFromFile(readings);
 
-            return Ok(result);
+            _meterReadingService.GetMeterReadingsFromCsv(readingsCsv);
+
+            return Ok();
+        }
+
+        private async Task<string> ReadCsvFromFile(IFormFile file)
+        {
+            var result = new StringBuilder();
+            using (var reader = new StreamReader(file.OpenReadStream()))
+            {
+                while (reader.Peek() >= 0)
+                    result.AppendLine(await reader.ReadLineAsync());
+            }
+            return result.ToString();
         }
     }
 }

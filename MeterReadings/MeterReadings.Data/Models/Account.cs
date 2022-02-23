@@ -8,8 +8,10 @@ namespace MeterReadings.Data.Models
         [Required]
         public int AccountId { get; set; }
         [Required]
+        [MaxLength(64)]
         public string FirstName { get; set; }
         [Required]
+        [MaxLength(64)]
         public string LastName { get; set; }
 
         public Account(int accountId, string firstName, string lastName)

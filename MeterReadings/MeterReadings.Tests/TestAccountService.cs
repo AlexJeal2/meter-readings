@@ -5,6 +5,7 @@ using MeterReadings.Services;
 using Moq;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace MeterReadings.Tests
 {
+    [ExcludeFromCodeCoverage]
     public class TestAccountService
     {
         private Mock<IMapper> mockMapper = new Mock<IMapper>();

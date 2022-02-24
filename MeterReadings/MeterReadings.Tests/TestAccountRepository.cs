@@ -4,14 +4,13 @@ using MeterReadings.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
-using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MeterReadings.Tests
 {
+    [ExcludeFromCodeCoverage]
     public class TestAccountRepository
     {
         [Test]

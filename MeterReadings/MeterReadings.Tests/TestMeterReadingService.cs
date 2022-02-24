@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MeterReadings.Data.Models;
 using MeterReadings.Data.Repositories;
 using MeterReadings.Models;
 using MeterReadings.Services;
@@ -7,20 +8,33 @@ using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text;
 
 namespace MeterReadings.Tests
 {
+    [ExcludeFromCodeCoverage]
     public class TestMeterReadingService
     {
-        private Mock<IMeterReadingRepository> mockMeterReadingRepo = new Mock<IMeterReadingRepository>();
-        private Mock<IAccountRepository> mockAccountRepo = new Mock<IAccountRepository>();
-        private Mock<IMapper> mockMapper = new Mock<IMapper>();
-        private Mock<ILogger<MeterReadingService>> mockLogger = new Mock<ILogger<MeterReadingService>>();
+        private Mock<IMeterReadingRepository> mockMeterReadingRepo = new();
+        private Mock<IAccountRepository> mockAccountRepo = new();
+        private Mock<IMapper> mockMapper = new();
+        private Mock<ILogger<MeterReadingService>> mockLogger = new();
 
         private MeterReadingService CreateMeterReadingServiceFromMocks()
         {
             return new MeterReadingService(mockMeterReadingRepo.Object, mockAccountRepo.Object, mockMapper.Object, mockLogger.Object);
+        }
+
+        [SetUp]
+        public void Setup()
+        {
+            //Reset the mocks for each test
+            mockMeterReadingRepo = new();
+            mockAccountRepo = new();
+            mockMapper = new();
+            mockLogger = new();
         }
 
         [Test]
@@ -81,7 +95,7 @@ namespace MeterReadings.Tests
             csvBuilder.AppendLine("12345,09/02/2022 09:30,00200");
 
             var rowData = csvBuilder.ToString();
-            var readings = meterReadingService.GetValidMeterReadingsFromCsv(rowData);
+            var readings = meterReadingService.GetValidFormatMeterReadingsFromCsv(rowData);
 
             Assert.AreEqual(1, readings.ValidReadings.Count);
             Assert.AreEqual(2, readings.InvalidReadings.Count);
@@ -124,6 +138,44 @@ namespace MeterReadings.Tests
             };
 
             Assert.AreEqual(expectedResult, result);
+        }
+
+        [Test]
+        public void TestValidateAccountExistsWithInvalidAccountIdAppliesValidationCorrectly()
+        {
+            var meterReadingService = CreateMeterReadingServiceFromMocks();
+            var readings = new AddMeterReadingsResultDTO();
+            var validReadings = new List<MeterReadingDTO>()
+            {
+                new MeterReadingDTO(98765, DateTime.Parse("2022-02-22 09:00"), "00140"),
+                new MeterReadingDTO(98765, DateTime.Parse("2022-02-24 09:00"), "00150"),
+            };
+
+            readings.ValidReadings = new HashSet<MeterReadingDTO>(validReadings);
+
+            var mockMissingAccountIds = new HashSet<int>() { 98765 };
+
+            meterReadingService.ValidateAccountExists(mockMissingAccountIds, 98765, validReadings, readings);
+
+            Assert.AreEqual(0, readings.ValidReadings.Count);
+            Assert.AreEqual(2, readings.InvalidReadings.Count);
+            Assert.AreEqual("Account not found for AccountId 98765", readings.InvalidReadings[0].ValidationErrors[0]);
+        }
+
+        [Test]
+        public void TestValidateNoLaterDateExistsWhenLaterDateExists()
+        {
+            List<MeterReading> mockMeterReadings = new()
+            {
+                new MeterReading(12345, DateTime.Parse("2022-02-22 09:00"), "00100"),
+                new MeterReading(12345, DateTime.Parse("2022-02-24 09:00"), "00100")
+            };
+
+            mockMeterReadingRepo.Setup(x => x.GetReadingsForAccount(It.IsAny<int>())).Returns(mockMeterReadings.AsQueryable());
+
+            var meterReadingService = CreateMeterReadingServiceFromMocks();
+            //meterReadingService.
+
         }
     }
 }

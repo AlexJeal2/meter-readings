@@ -1,5 +1,7 @@
 ﻿using MeterReadings.Data.Models;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("MeterReadings.Tests")]
 namespace MeterReadings.Data.Repositories
 {
     public class AccountRepository : RepositoryBase, IAccountRepository

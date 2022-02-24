@@ -1,8 +1,10 @@
 ﻿using MeterReadings.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 
 namespace MeterReadings.Data
 {
+    [ExcludeFromCodeCoverage]
     public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> opt) : base(opt)

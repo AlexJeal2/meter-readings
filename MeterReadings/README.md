@@ -33,3 +33,7 @@ Project Cleanup
 ```cmd
 docker compose down -v
 ```
+
+Test Coverage
+-------------
+Unit test coverage for the API is currently ~80%

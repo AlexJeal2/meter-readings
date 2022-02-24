@@ -2,24 +2,19 @@
 using MeterReadings.Data.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace MeterReadings.Models
 {
+    [ExcludeFromCodeCoverage]
     public class MappingProfile : Profile
     {
         public MappingProfile()
         {
-            MapsCreateAccountModelToAccountModel();
             MapsMeterReadingDTOToMeterReading();
-        }
-
-        public void MapsCreateAccountModelToAccountModel()
-        {
-            CreateMap<AccountDTO, Account>();
-            CreateMap<Account, AccountDTO>();
         }
 
         public void MapsMeterReadingDTOToMeterReading()

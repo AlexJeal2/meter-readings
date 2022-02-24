@@ -4,8 +4,10 @@ using MeterReadings.Data.Repositories;
 using MeterReadings.Models;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
+[assembly: InternalsVisibleTo("MeterReadings.Tests")]
 namespace MeterReadings.Services
 {
     public class MeterReadingService : IMeterReadingService
@@ -27,7 +29,7 @@ namespace MeterReadings.Services
         }
         public async Task<AddMeterReadingsResultDTO> AddMeterReadingsFromCsvAsync(string csv)
         {
-            var result = GetValidMeterReadingsFromCsv(csv);
+            var result = GetValidFormatMeterReadingsFromCsv(csv);
             var groupedResults = GroupReadingsByCustomer(result);
 
             var missingAccountIds = GetMissingAccountIds(groupedResults.Keys);
@@ -39,7 +41,7 @@ namespace MeterReadings.Services
                     continue;
                 }
 
-                ValidateNoLaterRecords(accountId, readings, result);
+                ValidateNoLaterRecordExists(accountId, readings, result);
             }
 
             var newReadings = _mapper.Map<IEnumerable<MeterReading>>(result.ValidReadings);
@@ -48,7 +50,7 @@ namespace MeterReadings.Services
             return result;
         }
 
-        private void ValidateNoLaterRecords(int accountId, List<MeterReadingDTO> readings, AddMeterReadingsResultDTO result)
+        private void ValidateNoLaterRecordExists(int accountId, List<MeterReadingDTO> readings, AddMeterReadingsResultDTO result)
         {
             var latestAccountReading = _meterReadingRepository.GetReadingsForAccount(accountId)
                     .OrderByDescending(x => x.MeterReadingDateTime)
@@ -68,7 +70,7 @@ namespace MeterReadings.Services
             }
         }
 
-        public AddMeterReadingsResultDTO GetValidMeterReadingsFromCsv(string csv)
+        public AddMeterReadingsResultDTO GetValidFormatMeterReadingsFromCsv(string csv)
         {
             var result = new AddMeterReadingsResultDTO();
             if (string.IsNullOrWhiteSpace(csv)) return result;
@@ -83,6 +85,17 @@ namespace MeterReadings.Services
                 {
                     var reading = CreateReadingFromCsvData(rowData);
                     ValidateReading(reading, result);
+
+                    if (!reading.IsValid)
+                    {
+                        //Remove it from valid just in case we had a duplicate
+                        result.ValidReadings.Remove(reading);
+                        result.InvalidReadings.Add(reading);
+                    }
+                    else
+                    {
+                        result.ValidReadings.Add(reading);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -125,17 +138,6 @@ namespace MeterReadings.Services
             {
                 //We have a duplicate, reject it
                 reading.ValidationErrors.Add(@$"Duplicate meter reading found for AccountId: {reading.AccountId}, MeterReadingDateTime: {reading.MeterReadingDateTime}");
-            }
-
-            if (!reading.IsValid)
-            {
-                //Remove it from valid just in case we had a duplicate
-                response.ValidReadings.Remove(reading);
-                response.InvalidReadings.Add(reading);
-            }
-            else
-            {
-                response.ValidReadings.Add(reading);
             }
         }
 

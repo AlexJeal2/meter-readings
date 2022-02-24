@@ -25,5 +25,22 @@ namespace MeterReadings.Data.Models
             MeterReadingDateTime = meterReadingDateTime;
             MeterReadValue = meterReadValue;
         }
+
+        public override bool Equals(object? obj)
+        {
+            return obj != null && Equals(obj as MeterReading);
+        }
+
+        public bool Equals(MeterReading? other)
+        {
+            return other != null 
+                && AccountId == other.AccountId 
+                && MeterReadingDateTime == other.MeterReadingDateTime;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(AccountId, MeterReadingDateTime, MeterReadValue);
+        }
     }
 }

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:5000",
+      "sslPort": 5000
+    },
+    "environmentVariables": {
+      "ASPNETCORE_ENVIRONMENT": "Development",
+      "SQL_CONNECTIONSTRING": "Server=localhost,6000;Database=MeterReadings;user=sa;password=ENSEKTest2022;MultipleActiveResultSets=true"
+    }
+  },
+  "profiles": {
+    "MeterReadings.API": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "SQL_CONNECTIONSTRING": "Server=localhost,6000;Database=MeterReadings;user=sa;password=ENSEKTest2022;MultipleActiveResultSets=true"
+      },
+      "applicationUrl": "https://localhost:5001;http://localhost:5000",
+      "dotnetRunMessages": true
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "SQL_CONNECTIONSTRING": "Server=localhost,6000;Database=MeterReadings;user=sa;password=ENSEKTest2022;MultipleActiveResultSets=true"
+      }
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
+      "publishAllPorts": true,
+      "useSSL": true,
+      "environmentVariables": {
+        "SQL_CONNECTIONSTRING": "Server=host.docker.internal,6000;Database=MeterReadings;user=sa;password=ENSEKTest2022;MultipleActiveResultSets=true"
+      }
+    }
+  }
+}
